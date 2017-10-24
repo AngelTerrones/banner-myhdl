@@ -25,7 +25,7 @@ def banner_testbench():
     segmentos = createSignal(0, 8)
     shift     = createSignal(0, 1)
     dut       = banner(clk, rst, anodos, segmentos, shift,
-                       CLK_XTAL=CLK_XTAL, CLK_BANNER=CLK_BANNER, CLK_DISPLAY=CLK_DISPLAY)
+                       CLK_XTAL=CLK_XTAL, CLK_BANNER=CLK_BANNER, CLK_DISPLAY=CLK_DISPLAY, RST_NEG=False)
     cmd1      = 'iverilog -o {0}/{1}.o {0}/{1}.v {0}/tb_{1}.v'.format(PATH, FILENAME)
     cmd2      = 'vvp -v -m myhdl {0}/{1}.o'.format(PATH, FILENAME)
     dut.convert(path=PATH, name=FILENAME, trace=True, testbench=True)

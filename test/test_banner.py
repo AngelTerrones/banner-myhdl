@@ -29,7 +29,8 @@ def banner_testbench():
                        shift_o=shift,
                        CLK_XTAL=CLK_XTAL,
                        CLK_DISPLAY=CLK_DISPLAY,
-                       CLK_BANNER=CLK_BANNER)
+                       CLK_BANNER=CLK_BANNER,
+                       RST_NEG=False)
     text        = (0xf, 0xf, 0xf, 0xf, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
     segment_ROM = (0x03, 0x9f, 0x25, 0x0d, 0x99, 0x49, 0x41, 0x1f,
                    0x01, 0x09, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff)

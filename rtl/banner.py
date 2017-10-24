@@ -14,8 +14,9 @@ def banner(clk_i,
            segmentos_o,
            shift_o,
            CLK_XTAL=50000000,
-           CLK_DISPLAY=120,
-           CLK_BANNER=1):
+           CLK_DISPLAY=240,
+           CLK_BANNER=1,
+           RST_NEG=False):
     """
     Banner para mostrar números 0-9, izquierda a derecha
     """
@@ -25,13 +26,21 @@ def banner(clk_i,
     table2show    = createSignal(0, 14 * 4)
     index_sel     = createSignal(0, 2)
     anodos        = createSignal(0, len(anodos_o))
-    clk_div_d     = clk_div(clk_i, rst_i, clk_display, clk_banner,  # noqa
+    rst_aux_o     = createSignal(0, 1)
+    clk_div_d     = clk_div(clk_i, rst_aux_o, clk_display, clk_banner,  # noqa
                             CLK_XTAL=CLK_XTAL, CLK_DISPLAY=CLK_DISPLAY, CLK_BANNER=CLK_BANNER)
-    driver        = driver7seg(clk_i, rst_i, clk_display, number2show, anodos, segmentos_o)  # noqa
+    driver        = driver7seg(clk_i, rst_aux_o, clk_display, number2show, anodos, segmentos_o)  # noqa
+
+    @hdl.always_comb
+    def rst_proc():
+        if RST_NEG:
+            rst_aux_o.next = not rst_i
+        else:
+            rst_aux_o.next = rst_i
 
     @hdl.always(clk_i.posedge)
     def shift_banner_proc():
-        if rst_i:
+        if rst_aux_o:
             table2show.next = hdl.modbv(0x9876543210ffff)[14 * 4:]
         elif clk_banner:
             table2show.next = hdl.concat(table2show[4:0], table2show[14 * 4:4])

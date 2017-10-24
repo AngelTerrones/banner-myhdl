@@ -77,7 +77,7 @@ program-fpga: build-prom
 # ---
 %.v: $(.PYTHON_FILES)
 	@mkdir -p $(.FOUT)
-	@PYTHONPATH=$(PWD) $(.PYTHON) $(.SCRIPT_FOLDER)/core_gen.py to_verilog --path $(.FOUT) --filename $(.TOPE_V) --clock $(.CLK)
+	@PYTHONPATH=$(PWD) $(.PYTHON) $(.SCRIPT_FOLDER)/core_gen.py to_verilog --path $(.FOUT) --filename $(.TOPE_V) --clock $(.CLK) $(.RST_NEG)
 
 %.bit: ucf/pines.ucf
 	@mkdir -p $(.FOUT)

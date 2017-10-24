@@ -165,7 +165,13 @@ def convert_to_verilog(args):
     segmentos = createSignal(0, 8)
     shift     = createSignal(0, 1)
     clk_xtal  = args.clock * 1000000
-    dut       = banner(clk, rst, anodos, segmentos, shift, CLK_XTAL=clk_xtal)
+    dut       = banner(clk_i=clk,
+                       rst_i=rst,
+                       anodos_o=anodos,
+                       segmentos_o=segmentos,
+                       shift_o=shift,
+                       CLK_XTAL=clk_xtal,
+                       RST_NEG=args.rst_neg)
     dut.convert(path=args.path, name=args.filename, trace=False, testbench=False)
 
 
@@ -192,6 +198,7 @@ if __name__ == '__main__':
     parser2verilog.add_argument('--path', help='Path to store the verilog output file', type=str, required=True)
     parser2verilog.add_argument('--filename', help='Name for the verilog output file', type=str, required=True)
     parser2verilog.add_argument('--clock', help='Clock in MHz', type=int, required=True)
+    parser2verilog.add_argument('--rst_neg', help='Reset polarity', action='store_true')
     parser2verilog.set_defaults(func=convert_to_verilog)
 
     # setup
