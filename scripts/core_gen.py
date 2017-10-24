@@ -39,17 +39,40 @@ ParamFile: <design>_xst.scr
 "-p <partname>";                  # Target Device
 "-opt_level 2";                   # Optimization Effort Criteria
                                   # 1 (Normal) or 2 (High)
-
-"-top       {0}";
-
+"-use_dsp48 Auto";
+"-iobuf YES";
+"-max_fanout 100000";
+"-bufg 16";
+"-register_duplication YES";
+"-register_balancing No";
+"-optimize_primitives NO";
+"-auto_bram_packing NO";
+"-equivalent_register_removal NO";
+"-resource_sharing NO";
 "-opt_mode SPEED";                # Optimization Criteria
                                   # AREA or SPEED
+"-top       {0}";
 End ParamFile
 End Program xst
 
 #-------------------------------------------------------------------------------
 # See XST USER Guide Chapter 8 (Command Line Mode) for all XST options
 #-------------------------------------------------------------------------------
+"""
+
+bitgen = """
+Program bitgen
+<inputdir><design>.ncd;   # Input ncd file
+-l;                       # Create logic allocation file
+-w;                       # Overwrite existing output file
+-m;                       # Create mask file
+-intstyle xflow;          # Message Reporting Style: ise, xflow, or silent
+-g DonePin:PullUp;
+-g TckPin:PullNone;
+-g UnusedPin:PullNone;
+-g ConfigRate:10;
+-g StartUpClk:{0};
+END Program bitgen
 """
 
 prom_file = """
@@ -179,6 +202,8 @@ def setup_project(args):
     # generate opt file
     with open('{0}/xst_verilog.opt'.format(args.build_folder), 'w') as f:
         f.write(xst_verilog.format(args.top_module))
+    with open('{0}/bitgen.opt'.format(args.build_folder), 'w') as f:
+        f.write(bitgen.format(args.clk_source))
     # generate PROM batch file
     with open('{0}/prom_file.batch'.format(args.build_folder), 'w') as f:
         f.write(prom_file.format(args.top_module))
@@ -205,6 +230,7 @@ if __name__ == '__main__':
     setup = subparsers.add_parser('setup', help='Generate project files for synthesis')
     setup.add_argument('--build_folder', help='Output folder', type=str, required=True)
     setup.add_argument('--top_module', help='', type=str, required=True)
+    setup.add_argument('--clk_source', help='', type=str, required=True)
     setup.set_defaults(func=setup_project)
 
     args = parser.parse_args()

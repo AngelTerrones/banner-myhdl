@@ -25,9 +25,11 @@ ifeq ($(.BRD), xula2)
 	.FPGA=xc6slx25-2-ftg256  # SPARTAN-6
 	.CLK=12
 	.RST_NEG=--rst_neg
+	.CLK_SRC=Cclk  # Or JtagClk
 else ifeq ($(.BRD), s3)
 	.FPGA=xc3s200-ft256-4  # SPARTAN-3
 	.CLK=50
+	.CLK_SRC=JtagClk
 else
 $(error Invalid FPGA board)
 endif
@@ -82,9 +84,8 @@ program-fpga: build-prom
 %.bit: ucf/pines_$(.BRD).ucf
 	@mkdir -p $(.FOUT)
 	@cp -f ucf/pines_$(.BRD).ucf $(.FOUT)/$(.TOPE_V).ucf
-	@PYTHONPATH=$(PWD) $(.PYTHON) $(.SCRIPT_FOLDER)/core_gen.py setup --build_folder $(.FOUT) --top_module $(.TOPE_V)
-	@cd $(.FOUT) && \
-	xflow -p $(.FPGA) -implement high_effort.opt -config bitgen.opt -synth xst_verilog.opt $(.TOPE_V).v
+	@PYTHONPATH=$(PWD) $(.PYTHON) $(.SCRIPT_FOLDER)/core_gen.py setup --build_folder $(.FOUT) --top_module $(.TOPE_V) --clk_source $(.CLK_SRC)
+	@cd $(.FOUT) &&	xflow -p $(.FPGA) -implement high_effort.opt -config bitgen.opt -synth xst_verilog.opt $(.TOPE_V).v
 
 %.mcs: $(.FOUT)/$(.TOPE_V).bit
 	@cd $(.FOUT) && impact -batch prom_file.batch
