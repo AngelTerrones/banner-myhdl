@@ -25,7 +25,7 @@ ifeq ($(.BRD), xula2)
 	.FPGA=xc6slx25-2-ftg256  # SPARTAN-6
 	.CLK=12
 	.RST_NEG=--rst_neg
-else ifeq ($(.BRD), S3)
+else ifeq ($(.BRD), s3)
 	.FPGA=xc3s200-ft256-4  # SPARTAN-3
 	.CLK=50
 else
@@ -79,9 +79,9 @@ program-fpga: build-prom
 	@mkdir -p $(.FOUT)
 	@PYTHONPATH=$(PWD) $(.PYTHON) $(.SCRIPT_FOLDER)/core_gen.py to_verilog --path $(.FOUT) --filename $(.TOPE_V) --clock $(.CLK) $(.RST_NEG)
 
-%.bit: ucf/pines.ucf
+%.bit: ucf/pines_$(.BRD).ucf
 	@mkdir -p $(.FOUT)
-	@cp -f ucf/pines.ucf $(.FOUT)/$(.TOPE_V).ucf
+	@cp -f ucf/pines_$(.BRD).ucf $(.FOUT)/$(.TOPE_V).ucf
 	@PYTHONPATH=$(PWD) $(.PYTHON) $(.SCRIPT_FOLDER)/core_gen.py setup --build_folder $(.FOUT) --top_module $(.TOPE_V)
 	@cd $(.FOUT) && \
 	xflow -p $(.FPGA) -implement high_effort.opt -config bitgen.opt -synth xst_verilog.opt $(.TOPE_V).v
