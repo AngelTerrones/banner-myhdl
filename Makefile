@@ -14,11 +14,23 @@
 #-------------------------------------------------------------------------------
 # FPGA
 #-------------------------------------------------------------------------------
-
+# Boards:
+# Xula2 (using SPARTAN-6)
+# S3 (Using SPARTAN-3)
+#-------------------------------------------------------------------------------
+.BRD=xula2
 .TOPE_V=banner
-#.FPGA=xc3s200-ft256-4  # SPARTAN-3
-.FPGA=xc6slx25-2-ftg256  # SPARTAN-6
-.CLK=12
+
+ifeq ($(.BRD), xula2)
+	.FPGA=xc6slx25-2-ftg256  # SPARTAN-6
+	.CLK=12
+	.RST_NEG=--rst_neg
+else ifeq ($(.BRD), S3)
+	.FPGA=xc3s200-ft256-4  # SPARTAN-3
+	.CLK=50
+else
+$(error Invalid FPGA board)
+endif
 
 #-------------------------------------------------------------------------------
 # XILINX ISE
