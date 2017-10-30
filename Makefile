@@ -67,7 +67,7 @@ test-cosim:
 # ********************************************************************
 # Implementation
 # ********************************************************************
-to-verilog: $(.FOUT)/$(.TOPE_V).v
+to-verilog: $(.PYTHON_FILES) $(.FOUT)/$(.TOPE_V).v
 
 build-bitstream: $(.FOUT)/$(.TOPE_V).v $(.FOUT)/$(.TOPE_V).bit
 
