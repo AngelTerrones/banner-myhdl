@@ -10,6 +10,7 @@ def driver7seg(clk_i,
                rst_i,
                tick_i,
                valor_i,
+               off_i,
                anodos_o,
                segmentos_o):
     """
@@ -21,7 +22,7 @@ def driver7seg(clk_i,
 
     anodos      = createSignal(0, len(anodos_o))
     segment_ROM = (0x03, 0x9f, 0x25, 0x0d, 0x99, 0x49, 0x41, 0x1f,
-                   0x01, 0x09, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff)
+                   0x01, 0x09, 0x11, 0xc1, 0x63, 0x85, 0x61, 0x71)
 
     @hdl.always(clk_i.posedge)
     def anodos_proc():
@@ -32,7 +33,10 @@ def driver7seg(clk_i,
 
     @hdl.always_comb
     def segmentos_proc():
-        segmentos_o.next = segment_ROM[valor_i]
+        if off_i:
+            segmentos_o.next = hdl.modbv(0xff)[len(segmentos_o):]
+        else:
+            segmentos_o.next = segment_ROM[valor_i]
         anodos_o.next    = anodos
 
     return hdl.instances()

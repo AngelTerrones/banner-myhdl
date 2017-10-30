@@ -3,6 +3,7 @@
 
 import myhdl as hdl
 from rtl.utils import createSignal
+from rtl.utils import log2up
 from rtl.banner import banner
 
 # Constantes
@@ -31,10 +32,17 @@ def banner_testbench():
                        CLK_DISPLAY=CLK_DISPLAY,
                        CLK_BANNER=CLK_BANNER,
                        RST_NEG=False)
-    text        = (0xf, 0xf, 0xf, 0xf, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+    text        = ('off', 'off', 'off', 'off', 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
     segment_ROM = (0x03, 0x9f, 0x25, 0x0d, 0x99, 0x49, 0x41, 0x1f,
-                   0x01, 0x09, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff)
-    index_text  = createSignal(0, 4)
+                   0x01, 0x09, 0x11, 0xc1, 0x63, 0x85, 0x61, 0x71)
+    index_text  = createSignal(0, log2up(len(text)))
+
+    def get_segment_out(idx):
+        _idx = text[idx]
+        if _idx == 'off':
+            return 0xff
+        else:
+            return segment_ROM[_idx]
 
     # generate clk
     @hdl.always(hdl.delay(int(TICK_PERIOD / 2)))
@@ -52,13 +60,15 @@ def banner_testbench():
             yield anodos
             yield hdl.delay(1)  # wait for combinatorial outputs
             if anodos == 0b0001:
-                assert segmentos == segment_ROM[text[index_text]], "Error: output mismatch. Index = {0}".format(index_text)
+                assert segmentos == get_segment_out(index_text), "Error: output mismatch. Index = {0}, anodos = {1}, segment_o = {2}".format(index_text, anodos, hex(segmentos))
             elif anodos == 0b0010:
-                assert segmentos == segment_ROM[text[(index_text + 1) % len(text)]], "Error: output mismatch. Index = {0}".format(index_text)
+                assert segmentos == get_segment_out((index_text + 1) % len(text)), "Error: output mismatch. Index = {0}".format(index_text)
             elif anodos == 0b0100:
-                assert segmentos == segment_ROM[text[(index_text + 2) % len(text)]], "Error: output mismatch. Index = {0}".format(index_text)
+                assert segmentos == get_segment_out((index_text + 2) % len(text)), "Error: output mismatch. Index = {0}".format(index_text)
             elif anodos == 0b1000:
-                assert segmentos == segment_ROM[text[(index_text + 3) % len(text)]], "Error: output mismatch. Index = {0}".format(index_text)
+                assert segmentos == get_segment_out((index_text + 3) % len(text)), "Error: output mismatch. Index = {0}".format(index_text)
+            else:
+                yield hdl.Error("Invalid patter for anodos: {}".format(hdl.bin(anodos, width=4)))
 
     # run the test for N full rotations
     @hdl.instance

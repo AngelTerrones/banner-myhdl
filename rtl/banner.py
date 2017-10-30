@@ -20,16 +20,22 @@ def banner(clk_i,
     """
     Banner para mostrar números 0-9, izquierda a derecha
     """
+    TXT           = "fedcba9876543210dead"
+    NMBR          = int(TXT, base=16)
+    NCHAR         = len(TXT)
+    NBITS         = 4 * len(TXT)
     clk_display   = createSignal(0, 1)
     clk_banner    = createSignal(0, 1)
     number2show   = createSignal(0, 4)
-    table2show    = createSignal(0, 14 * 4)
+    table2show    = createSignal(0, NBITS)
+    table2off     = createSignal(0, NCHAR)
     index_sel     = createSignal(0, 2)
     anodos        = createSignal(0, len(anodos_o))
     rst_aux_o     = createSignal(0, 1)
+    off_driver    = createSignal(0, 1)
     clk_div_d     = clk_div(clk_i, rst_aux_o, clk_display, clk_banner,  # noqa
                             CLK_XTAL=CLK_XTAL, CLK_DISPLAY=CLK_DISPLAY, CLK_BANNER=CLK_BANNER)
-    driver        = driver7seg(clk_i, rst_aux_o, clk_display, number2show, anodos, segmentos_o)  # noqa
+    driver        = driver7seg(clk_i, rst_aux_o, clk_display, number2show, off_driver, anodos, segmentos_o)  # noqa
 
     @hdl.always_comb
     def rst_proc():
@@ -41,9 +47,11 @@ def banner(clk_i,
     @hdl.always(clk_i.posedge)
     def shift_banner_proc():
         if rst_aux_o:
-            table2show.next = hdl.modbv(0x9876543210ffff)[14 * 4:]
+            table2show.next = hdl.modbv(NMBR)[NBITS:]
+            table2off.next  = hdl.modbv(0xF)[NCHAR:]
         elif clk_banner:
-            table2show.next = hdl.concat(table2show[4:0], table2show[14 * 4:4])
+            table2show.next = hdl.concat(table2show[4:0], table2show[NBITS:4])
+            table2off.next  = hdl.concat(table2off[0], table2off[NCHAR:1])
 
     @hdl.always_comb
     def index_proc():
@@ -62,6 +70,7 @@ def banner(clk_i,
     def select_digit_proc():
         """verilator lint_off WIDTH"""
         number2show.next = (table2show >> (index_sel * 4)) & hdl.modbv(0xf)[4:]
+        off_driver.next  = table2off[index_sel]
         """verilator lint_on WIDTH"""
         anodos_o.next    = anodos
         shift_o.next     = clk_banner
